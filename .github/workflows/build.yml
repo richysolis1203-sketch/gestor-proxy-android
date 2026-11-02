@@ -1,0 +1,110 @@
+name: Build APK
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Signing key
+        shell: bash
+        run: |
+          if [ -f keystore/gestor.jks ]; then
+            KS="$GITHUB_WORKSPACE/keystore/gestor.jks"
+          else
+            KS="$RUNNER_TEMP/gestor.jks"
+            keytool -genkeypair -keystore "$KS" -alias gestor -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass gestorproxy -keypass gestorproxy -dname "CN=Gestor Proxy, O=Gestor Proxy"
+          fi
+          {
+            echo "KEYSTORE_PATH=$KS"
+            echo "KEYSTORE_PASSWORD=gestorproxy"
+            echo "KEY_ALIAS=gestor"
+            echo "KEY_PASSWORD=gestorproxy"
+          } >> "$GITHUB_ENV"
+
+      - name: Build
+        id: build
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace assembleRelease 2>&1 | tee build.log
+
+      - name: Upload APK
+        if: steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gestor-proxy-apk
+          path: app/build/outputs/apk/release/*.apk
+
+      - name: Publish APK as a release
+        if: steps.build.outcome == 'success'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n1)
+          cp "$APK" "$RUNNER_TEMP/GestorProxy.apk"
+          gh release create "build-${GITHUB_RUN_NUMBER}" "$RUNNER_TEMP/GestorProxy.apk" \
+            --target "$GITHUB_SHA" \
+            --title "Gestor Proxy Android - compilacion ${GITHUB_RUN_NUMBER}" \
+            --notes "Compilado automaticamente desde ${GITHUB_SHA} (rama ${GITHUB_REF_NAME})."
+
+      - name: Publish build log to the ci-logs branch
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          mkdir -p "$RUNNER_TEMP/ci"
+          {
+            echo "sha=${GITHUB_SHA}"
+            echo "branch=${GITHUB_REF_NAME}"
+            echo "build_outcome=${{ steps.build.outcome }}"
+            echo "run_number=${GITHUB_RUN_NUMBER}"
+            echo "finished=$(date -u +%FT%TZ)"
+          } > "$RUNNER_TEMP/ci/status.txt"
+          [ -f build.log ] && tail -n 700 build.log > "$RUNNER_TEMP/ci/build-tail.log"
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          rm -rf "$RUNNER_TEMP/logs"
+          if git ls-remote --exit-code --heads "$REPO_URL" ci-logs >/dev/null 2>&1; then
+            git clone -q --depth 1 --branch ci-logs "$REPO_URL" "$RUNNER_TEMP/logs"
+          else
+            mkdir "$RUNNER_TEMP/logs"
+            cd "$RUNNER_TEMP/logs" && git init -q -b ci-logs && git remote add origin "$REPO_URL"
+          fi
+          cd "$RUNNER_TEMP/logs"
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          mkdir -p "logs/${GITHUB_SHA}"
+          cp "$RUNNER_TEMP/ci/"* "logs/${GITHUB_SHA}/"
+          git add -A
+          git commit -q -m "log ${GITHUB_SHA}"
+          for i in 1 2 3 4; do
+            git push -q origin ci-logs && break
+            git pull -q --rebase origin ci-logs
+            sleep 3
+          done
