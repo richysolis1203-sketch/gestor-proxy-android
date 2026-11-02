@@ -1,0 +1,5 @@
+sha=98ce0f1efd5fef759ee8e2a038d9a02a27189b23
+branch=claude/android-app
+build_outcome=success
+run_number=1
+finished=2026-11-02T10:04:32Z
