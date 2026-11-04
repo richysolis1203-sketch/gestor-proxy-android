@@ -1,0 +1,127 @@
+ok   Json: ida y vuelta con caracteres especiales
+ok   Json: errores
+ok   Json: números
+ok   Validate: nombres
+ok   Validate: direcciones de proxy
+ok   Validate: puertos
+ok   Validate: formulario de proxy
+ok   Validate: barra de direcciones
+ok   Validate: pegar un proxy
+ok   Validate: IPv6 e IPv4
+ok   Validate: identificadores
+ok   Store: proxies y sesiones persisten
+ok   Store: máximo de sesiones y reutilización de procesos
+ok   Store: duplicar copia sólo la configuración
+ok   Store: borrar un proxy deja las sesiones sin proxy
+ok   Store: interruptor del proxy exige un proxy
+ok   Store: guardar una sesión no cambia su proceso
+ok   Store: escrituras simultáneas no pierden datos
+ok   Store: archivo dañado se recupera de la copia
+ok   Store: registros manipulados se ignoran
+ok   Store: sin archivo está vacío
+ok   AddrUtil: destinos locales
+ok   AddrUtil: borrar carpetas no sigue enlaces
+ok   TrackerList: dominios
+ok   TrackerList: URLs y reglas por ruta
+ok   Privacy: configuración y semilla por sesión
+ok   Privacy: guion de inicio de página
+ok   Privacy: User-Agent reducido
+ok   Privacy: páginas HTML escapan el texto
+ok   SOCKS5: sin usuario, el nombre llega como dominio (sin DNS local)
+ok   SOCKS5: con usuario y contraseña
+ok   SOCKS5: errores claros
+ok   SOCKS5: direcciones IP literales (IPv4 e IPv6)
+ok   Proxy inalcanzable, mudo o de otro tipo
+ok   HTTP CONNECT: usuario, errores y datos
+ok   HTTPS (TLS hacia el propio proxy)
+ok   Puente: CONNECT por SOCKS5 llega con el nombre y copia datos
+ok   Puente: si el proxy falla NO sale directo
+ok   Puente: bloqueado no abre nada; cambiar de modo en caliente
+ok   Puente: cambiar la ruta corta los túneles abiertos (y cambiar otra cosa no)
+ok   Puente: el gancho de actualización cambia la ruta sin cortar la conexión nueva
+ok   Puente: modo directo sólo cuando se pide
+ok   Puente: destinos locales bloqueados por omisión
+ok   Puente: rastreadores bloqueados antes de llegar al proxy
+ok   Puente: petición http absoluta por SOCKS5 (reescribe a forma de origen)
+ok   Puente: petición http absoluta por proxy HTTP (con usuario) y por CONNECT
+ok   Puente: peticiones inválidas
+ok   Puente: muchas conexiones a la vez y datos grandes íntegros
+ok   Puente: cierre a medias (el cliente termina de enviar y aún lee)
+ok   Puente: stop() corta todo y deja de escuchar
+ok   ProxyTester: interpretar respuestas de servicios de IP
+ok   ProxyTester: respuestas HTTP (con trozos)
+ok   ProxyTester: prueba completa por SOCKS5 + HTTPS
+ok   ProxyTester: errores se explican y distinguen
+ok   ProxyTester: comparar con la IP real
+ok   ProxyTester: conexión directa y sin internet
+
+56 pruebas correctas, 0 con fallo.
+ok   gp-webrtc.js bloquea WebRTC y no rompe la página
+
+Welcome to Gradle 8.10.2!
+
+Here are the highlights of this release:
+ - Support for Java 23
+ - Faster configuration cache
+ - Better configuration cache reports
+
+For more details see https://docs.gradle.org/8.10.2/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders
+> Task :app:mergeReleaseNativeLibs NO-SOURCE
+> Task :app:stripReleaseDebugSymbols NO-SOURCE
+> Task :app:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:javaPreCompileRelease
+> Task :app:generateReleaseResValues
+> Task :app:checkReleaseAarMetadata
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:mergeReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:parseReleaseLocalResources
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:desugarReleaseFileDependencies
+> Task :app:mergeReleaseStartupProfile
+> Task :app:mergeReleaseArtProfile
+> Task :app:mergeReleaseShaders
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:processReleaseJavaRes NO-SOURCE
+> Task :app:processReleaseManifestForPackage
+> Task :app:mergeReleaseJavaResource
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :app:processReleaseResources
+> Task :app:mergeExtDexRelease
+
+> Task :app:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:dexBuilderRelease
+> Task :app:mergeReleaseGlobalSynthetics
+> Task :app:optimizeReleaseResources
+> Task :app:mergeDexRelease
+> Task :app:compileReleaseArtProfile
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/build-1793827426267.json
+
+BUILD SUCCESSFUL in 54s
+38 actionable tasks: 38 executed
