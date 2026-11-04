@@ -1269,6 +1269,56 @@ public final class CoreTests {
                 }
             }
         });
+        test("Puente: cambiar la ruta corta los túneles abiertos (y cambiar otra cosa no)", new Body() {
+            public void run() throws Exception {
+                EchoServer echo = new EchoServer();
+                FakeSocks5 socks = new FakeSocks5(null, null, echo.port());
+                Bridge br = newBridge();
+                try {
+                    int port = br.start();
+                    br.configure(Bridge.Mode.DIRECT, null, false, "");
+                    Object[] r = bridgeConnect(port, "127.0.0.1:" + echo.port());
+                    Socket direct = (Socket) r[1];
+                    eq("uno", echoThrough(direct, "uno"), "el túnel directo funciona");
+
+                    // Cambiar sólo el bloqueo de rastreadores NO cambia la ruta: el túnel sigue vivo.
+                    br.configure(Bridge.Mode.DIRECT, null, true, "");
+                    eq("dos", echoThrough(direct, "dos"), "el túnel sigue vivo si la ruta es la misma");
+
+                    // Pasar a proxy SÍ cambia la ruta: el túnel directo se corta (no puede seguir mostrando la IP real).
+                    br.configure(Bridge.Mode.PROXY, new Upstream("socks5", "127.0.0.1", socks.port(), "", ""), true, "");
+                    direct.setSoTimeout(3000);
+                    int n;
+                    try {
+                        n = direct.getInputStream().read();
+                    } catch (java.io.IOException e) {
+                        n = -1;
+                    }
+                    eq(-1, n, "el túnel directo se cortó al encender el proxy");
+
+                    // El túnel nuevo va por el proxy y también se corta al apagar el interruptor.
+                    Object[] r2 = bridgeConnect(port, "ejemplo.test:443");
+                    Socket viaProxy = (Socket) r2[1];
+                    eq("tres", echoThrough(viaProxy, "tres"), "por proxy");
+                    br.configure(Bridge.Mode.BLOCKED, null, true, "Proxy apagado: sin conexión.");
+                    viaProxy.setSoTimeout(3000);
+                    try {
+                        n = viaProxy.getInputStream().read();
+                    } catch (java.io.IOException e) {
+                        n = -1;
+                    }
+                    eq(-1, n, "el túnel por proxy se cortó al bloquear");
+                    String blocked = bridgeRequest(port, "CONNECT a.test:443 HTTP/1.1\r\nHost: a.test:443\r\n\r\n");
+                    ok(blocked.startsWith("HTTP/1.1 403"), "y no se abre nada nuevo: " + blocked);
+                    direct.close();
+                    viaProxy.close();
+                } finally {
+                    br.stop();
+                    socks.close();
+                    echo.close();
+                }
+            }
+        });
         test("Puente: modo directo sólo cuando se pide", new Body() {
             public void run() throws Exception {
                 EchoServer echo = new EchoServer();

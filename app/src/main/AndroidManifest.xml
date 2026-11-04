@@ -4,18 +4,143 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".App"
         android:allowBackup="false"
-        android:label="Gestor Proxy"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+
+        <!-- El motor web (WebView) no consulta Safe Browsing de Google ni envia metricas de uso. -->
+        <meta-data
+            android:name="android.webkit.WebView.EnableSafeBrowsing"
+            android:value="false" />
+        <meta-data
+            android:name="android.webkit.WebView.MetricsOptOut"
+            android:value="true" />
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Diez sesiones posibles: cada una vive en su propio proceso de Android, con su propia ventana (tarea). -->
+        <activity
+            android:name=".S0"
+            android:process=":s0"
+            android:taskAffinity="com.gestorproxy.app.s0"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S1"
+            android:process=":s1"
+            android:taskAffinity="com.gestorproxy.app.s1"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S2"
+            android:process=":s2"
+            android:taskAffinity="com.gestorproxy.app.s2"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S3"
+            android:process=":s3"
+            android:taskAffinity="com.gestorproxy.app.s3"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S4"
+            android:process=":s4"
+            android:taskAffinity="com.gestorproxy.app.s4"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S5"
+            android:process=":s5"
+            android:taskAffinity="com.gestorproxy.app.s5"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S6"
+            android:process=":s6"
+            android:taskAffinity="com.gestorproxy.app.s6"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S7"
+            android:process=":s7"
+            android:taskAffinity="com.gestorproxy.app.s7"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S8"
+            android:process=":s8"
+            android:taskAffinity="com.gestorproxy.app.s8"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
+
+        <activity
+            android:name=".S9"
+            android:process=":s9"
+            android:taskAffinity="com.gestorproxy.app.s9"
+            android:launchMode="singleTask"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|density|fontScale|layoutDirection|locale|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:label="@string/session_label"
+            android:theme="@style/SessionTheme" />
     </application>
 </manifest>

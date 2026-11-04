@@ -71,9 +71,17 @@ public final class Bridge {
     private static final int MAX_CONNECTIONS = 400;
     private static final byte[] CONNECT_OK = "HTTP/1.1 200 Connection Established\r\n\r\n".getBytes(StandardCharsets.ISO_8859_1);
 
+    /** Se llama antes de atender cada conexión nueva: permite releer la configuración si cambió desde otro proceso. */
+    public interface Freshener {
+        void beforeRequest();
+    }
+
+    private volatile Freshener freshener;
     private volatile Config cfg = new Config(Mode.BLOCKED, null, false, "Sin configurar.");
     private volatile boolean blockLocal = true;
     private volatile boolean stopped;
+    /** Sube cada vez que cambia la ruta de salida (modo o proxy): las conexiones de la ruta anterior se cortan. */
+    private final AtomicInteger routeEpoch = new AtomicInteger();
     private ServerSocket server;
     private Thread acceptThread;
     private final Set<Socket> active = Collections.newSetFromMap(new ConcurrentHashMap<Socket, Boolean>());
@@ -118,16 +126,44 @@ public final class Bridge {
         return ss.getLocalPort();
     }
 
-    public void configure(Mode mode, Upstream upstream, boolean blockTrackers, String reason) {
+    /**
+     * Cambia la configuración. Si cambia la RUTA de salida (modo o proxy), se cortan todas las conexiones abiertas:
+     * así, al apagar o encender el interruptor, ningún túnel de la ruta anterior sigue funcionando.
+     */
+    public synchronized void configure(Mode mode, Upstream upstream, boolean blockTrackers, String reason) {
+        Config next;
         if (mode == Mode.PROXY && upstream == null) {
-            cfg = new Config(Mode.BLOCKED, null, blockTrackers, "Falta el proxy de la sesión.");
+            next = new Config(Mode.BLOCKED, null, blockTrackers, "Falta el proxy de la sesión.");
         } else {
-            cfg = new Config(mode, upstream, blockTrackers, reason);
+            next = new Config(mode, upstream, blockTrackers, reason);
         }
+        Config prev = cfg;
+        cfg = next;
+        if (!sameRoute(prev, next)) {
+            routeEpoch.incrementAndGet();
+            cutConnections();
+        }
+    }
+
+    private static boolean sameRoute(Config a, Config b) {
+        if (a.mode != b.mode) return false;
+        if (a.mode != Mode.PROXY) return true;
+        Upstream x = a.upstream;
+        Upstream y = b.upstream;
+        return x.protocol.equals(y.protocol) && x.host.equals(y.host) && x.port == y.port
+                && x.username.equals(y.username) && x.password.equals(y.password);
+    }
+
+    private void cutConnections() {
+        for (Socket s : new ArrayList<Socket>(active)) AddrUtil.closeQuietly(s);
     }
 
     public Config config() {
         return cfg;
+    }
+
+    public void setFreshener(Freshener f) {
+        freshener = f;
     }
 
     /** Sólo para pruebas: permite destinos locales (127.0.0.1). En la app real siempre está activo el bloqueo. */
@@ -418,6 +454,15 @@ public final class Bridge {
                 return;
             }
             if (head == null) return;
+            Freshener fr = freshener;
+            if (fr != null) {
+                try {
+                    fr.beforeRequest();
+                } catch (RuntimeException e) {
+                    noteError("No se pudo actualizar la configuración: " + e);
+                }
+            }
+            int epoch = routeEpoch.get(); // se lee ANTES que la configuración (ver configure)
             Config c = cfg;
 
             if ("CONNECT".equalsIgnoreCase(head.method)) {
@@ -439,6 +484,10 @@ public final class Bridge {
                     return;
                 }
                 active.add(up);
+                if (routeEpoch.get() != epoch) {
+                    reply(cout, 503, "Service Unavailable", ROUTE_CHANGED_MSG);
+                    return;
+                }
                 cout.write(CONNECT_OK);
                 cout.flush();
                 if (head.rest.length > 0) {
@@ -480,12 +529,14 @@ public final class Bridge {
                 if (viaHttpProxy) {
                     up = c.upstream.openProxySocket(CONNECT_TIMEOUT_MS);
                     active.add(up);
+                    checkRoute(epoch);
                     int th = t.indexOf('#');
                     String absolute = th >= 0 ? t.substring(0, th) : t;
                     writeRequest(up.getOutputStream(), head, absolute, c.upstream.proxyAuthorizationHeader());
                 } else {
                     up = openUpstream(c, hp.host, hp.port);
                     active.add(up);
+                    checkRoute(epoch);
                     writeRequest(up.getOutputStream(), head, path, "");
                 }
                 if (head.rest.length > 0) {
@@ -517,8 +568,18 @@ public final class Bridge {
         } else {
             msg = ProxyException.fromDirect(e).getMessage();
         }
-        if (!(e instanceof ProxyException) || !"BLOCKED".equals(((ProxyException) e).code)) noteError(msg);
+        if (!(e instanceof ProxyException) || !isQuietCode(((ProxyException) e).code)) noteError(msg);
         return msg;
+    }
+
+    private static boolean isQuietCode(String code) {
+        return "BLOCKED".equals(code) || "ROUTE_CHANGED".equals(code);
+    }
+
+    private static final String ROUTE_CHANGED_MSG = "La ruta de salida cambió (interruptor del proxy); vuelve a intentarlo.";
+
+    private void checkRoute(int epoch) throws ProxyException {
+        if (routeEpoch.get() != epoch) throw new ProxyException("ROUTE_CHANGED", ROUTE_CHANGED_MSG);
     }
 
     private static int indexOfAny(String s, String chars) {

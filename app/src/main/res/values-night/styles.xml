@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@color/gp_accent</item>
+        <item name="android:colorAccent">@color/gp_accent</item>
+        <item name="android:windowBackground">@color/gp_bg</item>
+    </style>
+    <style name="SessionTheme" parent="AppTheme" />
+</resources>

@@ -45,12 +45,34 @@ jobs:
             echo "KEY_PASSWORD=gestorproxy"
           } >> "$GITHUB_ENV"
 
+      - name: Pruebas del nucleo (Java) y del script WebRTC (Node)
+        id: tests
+        shell: bash
+        run: |
+          set -o pipefail
+          { bash scripts/run-core-tests.sh && node tests/js/webrtc.test.js; } 2>&1 | tee build.log
+
       - name: Build
         id: build
         shell: bash
         run: |
           set -o pipefail
-          gradle --no-daemon --stacktrace assembleRelease 2>&1 | tee build.log
+          gradle --no-daemon --stacktrace assembleRelease 2>&1 | tee -a build.log
+
+      - name: Inspect APK
+        if: steps.build.outcome == 'success'
+        shell: bash
+        run: |
+          set +e
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n1)
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | tail -n1)
+          {
+            echo "== size"; ls -l "$APK"
+            echo "== badging"; "$AAPT2" dump badging "$APK" | head -n 40
+            echo "== manifest (procesos y afinidades)"
+            "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" | grep -E "E: activity|process|taskAffinity" | head -n 80
+          } > apk-info.txt 2>&1
+          cat apk-info.txt
 
       - name: Upload APK
         if: steps.build.outcome == 'success'
@@ -83,11 +105,13 @@ jobs:
           {
             echo "sha=${GITHUB_SHA}"
             echo "branch=${GITHUB_REF_NAME}"
+            echo "tests_outcome=${{ steps.tests.outcome }}"
             echo "build_outcome=${{ steps.build.outcome }}"
             echo "run_number=${GITHUB_RUN_NUMBER}"
             echo "finished=$(date -u +%FT%TZ)"
           } > "$RUNNER_TEMP/ci/status.txt"
           [ -f build.log ] && tail -n 700 build.log > "$RUNNER_TEMP/ci/build-tail.log"
+          [ -f apk-info.txt ] && cp apk-info.txt "$RUNNER_TEMP/ci/apk-info.txt"
           REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           rm -rf "$RUNNER_TEMP/logs"
           if git ls-remote --exit-code --heads "$REPO_URL" ci-logs >/dev/null 2>&1; then
