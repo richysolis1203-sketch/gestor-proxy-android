@@ -578,6 +578,16 @@ public class SessionActivity extends Activity {
                     loadInitial();
                 }
             });
+            // Seguro: si el motor web nunca avisa que ya apunta al puente, no se abre nada y se explica.
+            main.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!destroyed && web == null) {
+                        routeText.setText("Sin conexión: el navegador no terminó de prepararse.");
+                        showNotice("El navegador tardó demasiado en prepararse. Cierra la sesión y ábrela de nuevo.");
+                    }
+                }
+            }, 15000);
         } catch (RuntimeException e) {
             CrashLog.record(this, "No se pudo dirigir el navegador al puente local", e);
             routeText.setText("Sin conexión: no se pudo dirigir el navegador al puente local.");
