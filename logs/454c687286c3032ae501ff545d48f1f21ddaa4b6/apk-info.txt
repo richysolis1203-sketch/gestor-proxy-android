@@ -1,0 +1,75 @@
+== size
+-rw-r--r-- 1 runner runner 2870080 Nov  4 21:18 app/build/outputs/apk/release/app-release.apk
+== badging
+package: name='com.gestorproxy.app' versionCode='1' versionName='0.1.0' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
+minSdkVersion:'28'
+targetSdkVersion:'34'
+uses-permission: name='android.permission.INTERNET'
+application-label:'Gestor Proxy'
+application-label-af:'Gestor Proxy'
+application-label-am:'Gestor Proxy'
+application-label-ar:'Gestor Proxy'
+application-label-as:'Gestor Proxy'
+application-label-az:'Gestor Proxy'
+application-label-be:'Gestor Proxy'
+application-label-bg:'Gestor Proxy'
+application-label-bn:'Gestor Proxy'
+application-label-bs:'Gestor Proxy'
+application-label-ca:'Gestor Proxy'
+application-label-cs:'Gestor Proxy'
+application-label-da:'Gestor Proxy'
+application-label-de:'Gestor Proxy'
+application-label-el:'Gestor Proxy'
+application-label-en-AU:'Gestor Proxy'
+application-label-en-CA:'Gestor Proxy'
+application-label-en-GB:'Gestor Proxy'
+application-label-en-IN:'Gestor Proxy'
+application-label-en-XC:'Gestor Proxy'
+application-label-es:'Gestor Proxy'
+application-label-es-US:'Gestor Proxy'
+application-label-et:'Gestor Proxy'
+application-label-eu:'Gestor Proxy'
+application-label-fa:'Gestor Proxy'
+application-label-fi:'Gestor Proxy'
+application-label-fr:'Gestor Proxy'
+application-label-fr-CA:'Gestor Proxy'
+application-label-gl:'Gestor Proxy'
+application-label-gu:'Gestor Proxy'
+application-label-hi:'Gestor Proxy'
+application-label-hr:'Gestor Proxy'
+application-label-hu:'Gestor Proxy'
+application-label-hy:'Gestor Proxy'
+application-label-in:'Gestor Proxy'
+application-label-is:'Gestor Proxy'
+== manifest (procesos y afinidades)
+          E: activity (line=32)
+          E: activity (line=46)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s0" (Raw: ":s0")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s0" (Raw: "com.gestorproxy.app.s0")
+          E: activity (line=56)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s1" (Raw: ":s1")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s1" (Raw: "com.gestorproxy.app.s1")
+          E: activity (line=66)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s2" (Raw: ":s2")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s2" (Raw: "com.gestorproxy.app.s2")
+          E: activity (line=76)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s3" (Raw: ":s3")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s3" (Raw: "com.gestorproxy.app.s3")
+          E: activity (line=86)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s4" (Raw: ":s4")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s4" (Raw: "com.gestorproxy.app.s4")
+          E: activity (line=96)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s5" (Raw: ":s5")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s5" (Raw: "com.gestorproxy.app.s5")
+          E: activity (line=106)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s6" (Raw: ":s6")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s6" (Raw: "com.gestorproxy.app.s6")
+          E: activity (line=116)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s7" (Raw: ":s7")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s7" (Raw: "com.gestorproxy.app.s7")
+          E: activity (line=126)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s8" (Raw: ":s8")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s8" (Raw: "com.gestorproxy.app.s8")
+          E: activity (line=136)
+            A: http://schemas.android.com/apk/res/android:process(0x01010011)=":s9" (Raw: ":s9")
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)="com.gestorproxy.app.s9" (Raw: "com.gestorproxy.app.s9")
