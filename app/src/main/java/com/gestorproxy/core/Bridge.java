@@ -456,11 +456,16 @@ public final class Bridge {
             if (head == null) return;
             Freshener fr = freshener;
             if (fr != null) {
+                // Esta conexión es NUEVA: si el gancho cambia la ruta, no debe cortarse a sí misma (sí a las demás).
+                active.remove(client);
                 try {
                     fr.beforeRequest();
                 } catch (RuntimeException e) {
                     noteError("No se pudo actualizar la configuración: " + e);
+                } finally {
+                    active.add(client);
                 }
+                if (stopped) return;
             }
             int epoch = routeEpoch.get(); // se lee ANTES que la configuración (ver configure)
             Config c = cfg;

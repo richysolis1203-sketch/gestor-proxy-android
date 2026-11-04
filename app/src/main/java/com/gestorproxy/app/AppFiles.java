@@ -197,6 +197,8 @@ final class AppFiles {
      * eliminada). Nunca toca las de sesiones que existen. Devuelve cuántas carpetas borró.
      */
     static int cleanOrphans(Context c, Store.Data d) {
+        // Si la configuración estaba dañada o se recuperó de una copia, NO se borra nada: podría parecer que faltan sesiones.
+        if (d.note != null) return 0;
         Set<String> valid = new HashSet<String>();
         for (SessionDef s : d.sessions) valid.add(SessionDef.webViewSuffix(s.id));
         int n = 0;

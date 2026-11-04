@@ -48,6 +48,13 @@ final class Route {
         return new Route(Bridge.Mode.BLOCKED, null, p, "Proxy apagado: esta sesión está configurada para no conectarse sin proxy.");
     }
 
+    /** Identifica la ruta de salida (modo y proxy): cambia sólo cuando cambia por dónde sale el tráfico. */
+    String key() {
+        return mode + "|" + (mode == Bridge.Mode.PROXY && proxy != null
+                ? proxy.id + "|" + proxy.protocol + "|" + proxy.host + "|" + proxy.port + "|" + proxy.username + "|" + proxy.passwordEnc
+                : "");
+    }
+
     /** Texto corto para la barra de la sesión. */
     String label() {
         switch (mode) {

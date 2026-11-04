@@ -222,9 +222,14 @@ public class MainActivity extends Activity {
             noteShown = true;
             toast(data.note);
         }
-        int y = scrollView.getScrollY();
+        final int y = scrollView.getScrollY();
         render();
-        scrollView.scrollTo(0, y);
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.scrollTo(0, y);
+            }
+        });
     }
 
     private void render() {

@@ -1319,6 +1319,37 @@ public final class CoreTests {
                 }
             }
         });
+        test("Puente: el gancho de actualización cambia la ruta sin cortar la conexión nueva", new Body() {
+            public void run() throws Exception {
+                EchoServer echo = new EchoServer();
+                FakeSocks5 socks = new FakeSocks5(null, null, echo.port());
+                final Bridge br = newBridge();
+                try {
+                    int port = br.start();
+                    br.configure(Bridge.Mode.BLOCKED, null, false, "Proxy apagado.");
+                    final int socksPort = socks.port();
+                    final java.util.concurrent.atomic.AtomicInteger calls = new java.util.concurrent.atomic.AtomicInteger();
+                    br.setFreshener(new Bridge.Freshener() {
+                        public void beforeRequest() {
+                            // simula que el interruptor se encendió desde el gestor
+                            if (calls.incrementAndGet() == 1) {
+                                br.configure(Bridge.Mode.PROXY, new Upstream("socks5", "127.0.0.1", socksPort, "", ""), false, "");
+                            }
+                        }
+                    });
+                    Object[] r = bridgeConnect(port, "ejemplo.test:443");
+                    eq("HTTP/1.1 200 Connection Established", r[0], "la conexión nueva se atiende con la ruta nueva");
+                    eq("hola", echoThrough((Socket) r[1], "hola"), "y funciona");
+                    ((Socket) r[1]).close();
+                    eq("3:ejemplo.test:443", socks.requests.get(0), "salió por el proxy");
+                    ok(calls.get() >= 1, "el gancho se llamó");
+                } finally {
+                    br.stop();
+                    socks.close();
+                    echo.close();
+                }
+            }
+        });
         test("Puente: modo directo sólo cuando se pide", new Body() {
             public void run() throws Exception {
                 EchoServer echo = new EchoServer();

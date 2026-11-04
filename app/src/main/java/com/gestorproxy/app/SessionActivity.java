@@ -269,6 +269,7 @@ public class SessionActivity extends Activity {
         main.removeCallbacksAndMessages(null);
         try {
             if (web != null) {
+                CookieManager.getInstance().flush(); // guarda las cookies antes de cerrar el proceso
                 webHost.removeAllViews();
                 web.stopLoading();
                 web.destroy();
@@ -566,7 +567,7 @@ public class SessionActivity extends Activity {
         if (destroyed) return;
         try {
             ProxyConfig cfg = new ProxyConfig.Builder()
-                    .addProxyRule("http://127.0.0.1:" + port)
+                    .addProxyRule("127.0.0.1:" + port)
                     .removeImplicitRules()
                     .build();
             ProxyController.getInstance().setProxyOverride(cfg, mainExecutor, new Runnable() {
@@ -636,7 +637,7 @@ public class SessionActivity extends Activity {
                         || prev.seed != s.seed)) {
             showNotice("Cambiaste ajustes de privacidad: se aplican por completo al cerrar esta sesión y abrirla de nuevo.");
         }
-        if (prevRoute != null && (prevRoute.mode != r.mode || prevRoute.proxy != r.proxy)) {
+        if (prevRoute != null && !prevRoute.key().equals(r.key())) {
             showNotice("Cambió la ruta de salida. Recarga la página para que use la conexión nueva.");
         }
     }

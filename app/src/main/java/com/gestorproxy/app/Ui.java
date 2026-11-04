@@ -252,8 +252,7 @@ final class Ui {
     EditText field(String hint, int inputType) {
         EditText e = new EditText(ctx);
         e.setHint(hint);
-        e.setInputType(inputType);
-        e.setSingleLine(true);
+        e.setInputType(inputType); // sin setSingleLine(): reemplazaría el ocultado de la contraseña
         e.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         e.setTextColor(text);
         e.setHintTextColor(textDim);
