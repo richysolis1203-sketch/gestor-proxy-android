@@ -7,13 +7,17 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
@@ -29,13 +33,14 @@ import com.gestorproxy.core.TrackerList;
 import com.gestorproxy.core.Upstream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /** Pantalla principal: sesiones, proxies y ayuda. */
 public class MainActivity extends Activity {
-    private static final String VERSION = "0.1.0 (versión de prueba)";
+    private static final String VERSION = "0.2.0 (versión de prueba)";
 
     private Ui ui;
     private Store store;
@@ -45,7 +50,8 @@ public class MainActivity extends Activity {
     private LinearLayout content;
     private ScrollView scrollView;
     private LinearLayout tabBar;
-    private Button action;
+    private final Ui.Pill[] tabViews = new Ui.Pill[3];
+    private Ui.Pill action;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService io = Executors.newCachedThreadPool();
     private boolean resumed;
@@ -61,9 +67,8 @@ public class MainActivity extends Activity {
         ui = new Ui(this);
         store = AppFiles.store(this);
         getWindow().setStatusBarColor(ui.bg);
-        getWindow().setNavigationBarColor(ui.bg);
-        getWindow().getDecorView().setSystemUiVisibility(
-                ui.night ? 0 : (View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR));
+        getWindow().setNavigationBarColor(ui.bgDeep);
+        getWindow().getDecorView().setSystemUiVisibility(0); // barras oscuras con íconos claros
         buildFrame();
         refresh();
     }
@@ -131,53 +136,73 @@ public class MainActivity extends Activity {
     // ------------------------------------------------------------------ estructura
 
     private void buildFrame() {
-        LinearLayout root = ui.vertical();
-        root.setBackgroundColor(ui.bg);
+        FrameLayout stage = new FrameLayout(this);
+        stage.setBackground(ui.rootBackground());
 
-        LinearLayout header = ui.vertical();
-        header.setPadding(ui.dp(20), ui.dp(18), ui.dp(20), ui.dp(10));
-        header.addView(ui.label("Gestor Proxy", 24, ui.text, true));
-        header.addView(ui.dim("Ventanas de navegación separadas, cada una con su proxy"));
+        // Fondo: tu imagen, suave y desvanecida hacia abajo.
+        ImageView art = ui.picture(R.drawable.bg_art, ImageView.ScaleType.CENTER_CROP);
+        if (art != null) {
+            art.setAlpha(0.42f);
+            stage.addView(art, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ui.dp(400), Gravity.TOP));
+            View fade = new View(this);
+            int end = Ui.mix(ui.bg, ui.bgDeep, 0.47f);
+            fade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[] {Ui.alpha(end, 0), Ui.alpha(end, 0), Ui.alpha(end, 0x90), end}));
+            stage.addView(fade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ui.dp(400), Gravity.TOP));
+        }
+
+        LinearLayout root = ui.vertical();
+
+        LinearLayout header = ui.horizontal();
+        header.setPadding(ui.dp(20), ui.dp(20), ui.dp(20), ui.dp(14));
+        ImageView logo = ui.picture(R.drawable.logo_gp, ImageView.ScaleType.FIT_CENTER);
+        if (logo != null) header.addView(logo, ui.lpMargins(ui.dp(56), ui.dp(56), 0, 0, 14, 0));
+        LinearLayout titles = ui.vertical();
+        titles.addView(ui.label("Gestor Proxy", 26, ui.text, true));
+        titles.addView(ui.dim("Sesiones aisladas, cada una con su proxy"));
+        header.addView(titles, ui.lpWeight(1f));
         root.addView(header);
 
         tabBar = ui.horizontal();
-        tabBar.setPadding(ui.dp(12), 0, ui.dp(12), ui.dp(8));
+        tabBar.setPadding(ui.dp(14), 0, ui.dp(14), ui.dp(10));
         String[] names = {"Sesiones", "Proxies", "Ayuda"};
+        int[] icons = {R.drawable.ic_layers, R.drawable.ic_dns, R.drawable.ic_help};
         for (int i = 0; i < names.length; i++) {
             final int idx = i;
-            TextView t = ui.label(names[i], 14, ui.text, true);
-            t.setGravity(android.view.Gravity.CENTER);
-            t.setPadding(ui.dp(8), ui.dp(10), ui.dp(8), ui.dp(10));
-            t.setOnClickListener(new View.OnClickListener() {
+            Ui.Pill t = ui.pill(names[i], Ui.TONAL, icons[i], 13, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     selectTab(idx);
                 }
             });
-            tabBar.addView(t, ui.lpMargins(0, ViewGroup.LayoutParams.WRAP_CONTENT, 4, 0, 4, 0));
-            ((LinearLayout.LayoutParams) t.getLayoutParams()).weight = 1f;
+            tabViews[i] = t;
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            p.setMargins(ui.dp(4), 0, ui.dp(4), 0);
+            tabBar.addView(t, p);
         }
         root.addView(tabBar);
 
         scrollView = new ScrollView(this);
+        scrollView.setVerticalScrollBarEnabled(false);
         content = ui.vertical();
         content.setPadding(ui.dp(14), ui.dp(4), ui.dp(14), ui.dp(16));
         scrollView.addView(content, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(scrollView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
         LinearLayout bottom = ui.vertical();
-        bottom.setBackgroundColor(ui.bg);
-        bottom.setPadding(ui.dp(14), ui.dp(8), ui.dp(14), ui.dp(12));
-        action = ui.button("", Ui.PRIMARY, new View.OnClickListener() {
+        bottom.setPadding(ui.dp(16), ui.dp(8), ui.dp(16), ui.dp(14));
+        action = ui.pill("Nueva sesión", Ui.PRIMARY, R.drawable.ic_plus, 16, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onAction();
             }
         });
+        action.setMinimumHeight(ui.dp(54));
         bottom.addView(action, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(bottom);
 
-        setContentView(root);
+        stage.addView(root, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(stage);
     }
 
     private void selectTab(int i) {
@@ -187,11 +212,8 @@ public class MainActivity extends Activity {
     }
 
     private void paintTabs() {
-        for (int i = 0; i < tabBar.getChildCount(); i++) {
-            TextView t = (TextView) tabBar.getChildAt(i);
-            boolean sel = i == tab;
-            t.setTextColor(sel ? ui.onPrimary : ui.textDim);
-            t.setBackground(ui.ripple(ui.rounded(sel ? ui.primary : 0x00000000, 10)));
+        for (int i = 0; i < tabViews.length; i++) {
+            if (tabViews[i] != null) tabViews[i].setStyle(i == tab ? Ui.PRIMARY : Ui.TONAL);
         }
     }
 
@@ -247,7 +269,41 @@ public class MainActivity extends Activity {
                 break;
         }
         action.setVisibility(tab == 2 ? View.GONE : View.VISIBLE);
-        action.setText(tab == 0 ? "+  Nueva sesión" : "+  Añadir proxy");
+        action.setText(tab == 0 ? "Nueva sesión" : "Añadir proxy");
+    }
+
+    /** Tres fichas con números: sesiones, proxies y sesiones que salen por su proxy ahora mismo. */
+    private View statsRow() {
+        int withProxy = 0;
+        for (SessionDef s : data.sessions) {
+            if (Route.preview(s, data).mode == Bridge.Mode.PROXY) withProxy++;
+        }
+        View[] tiles = {
+            ui.statTile(R.drawable.ic_layers, ui.accent2, String.valueOf(data.sessions.size()), "Sesiones"),
+            ui.statTile(R.drawable.ic_dns, ui.lilac, String.valueOf(data.proxies.size()), "Proxies"),
+            ui.statTile(R.drawable.ic_bolt, ui.success, String.valueOf(withProxy), "Con proxy")
+        };
+        LinearLayout row = ui.horizontal();
+        for (int i = 0; i < tiles.length; i++) {
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            if (i > 0) p.setMargins(ui.dp(8), 0, 0, 0);
+            row.addView(tiles[i], p);
+        }
+        return row;
+    }
+
+    private View sectionTitle(String t) {
+        TextView x = ui.label(t, 18, ui.text, true);
+        x.setPadding(ui.dp(4), ui.dp(14), 0, 0);
+        return x;
+    }
+
+    /** «servidor:puerto» con el nombre delante sólo si el nombre aporta algo distinto de la dirección. */
+    private static String proxyLine(ProxyDef p) {
+        String d = p.describe();
+        String n = p.name == null ? "" : p.name.trim();
+        if (n.isEmpty() || d.toLowerCase(Locale.ROOT).contains(n.toLowerCase(Locale.ROOT))) return d;
+        return n + "  ·  " + d;
     }
 
     private LinearLayout.LayoutParams cardParams() {
@@ -279,12 +335,14 @@ public class MainActivity extends Activity {
             content.addView(c, cardParams());
             return;
         }
+        content.addView(statsRow(), ui.lpMargins(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 6, 0, 2));
+        content.addView(sectionTitle("Mis sesiones"));
         for (SessionDef s : data.sessions) content.addView(sessionCard(s), cardParams());
     }
 
     private View crashCard(final String crash) {
         LinearLayout c = ui.card();
-        c.setBackground(ui.outlined(ui.night ? 0xFF3A2F12 : 0xFFFFF4CC, ui.warn, 14));
+        c.setBackground(ui.outlined(Ui.alpha(ui.warn, 0x22), Ui.alpha(ui.warn, 0x88), 18));
         c.addView(ui.label("La app tuvo un error la última vez", 15, ui.text, true));
         c.addView(ui.space(4));
         c.addView(ui.dim("Si quieres que te ayuden a arreglarlo, copia el detalle y envíalo."));
@@ -313,41 +371,62 @@ public class MainActivity extends Activity {
         LinearLayout card = ui.card();
 
         LinearLayout head = ui.horizontal();
-        head.addView(ui.dot(s.colorValue(), 14));
+        FrameLayout av = new FrameLayout(this);
+        av.addView(ui.avatar(Ui.initial(s.name), s.colorValue(), 48),
+                new FrameLayout.LayoutParams(ui.dp(48), ui.dp(48), Gravity.BOTTOM | Gravity.START));
+        av.addView(ui.ringDot(isAlive ? ui.success : 0xFF6B6584, 14),
+                new FrameLayout.LayoutParams(ui.dp(14), ui.dp(14), Gravity.TOP | Gravity.END));
+        head.addView(av, ui.lp(ui.dp(54), ui.dp(54)));
+
+        LinearLayout mid = ui.vertical();
+        mid.setPadding(ui.dp(12), 0, ui.dp(8), 0);
         TextView nm = ui.title(s.name);
-        nm.setPadding(ui.dp(10), 0, ui.dp(8), 0);
         nm.setSingleLine(true);
         nm.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        head.addView(nm, ui.lpWeight(1f));
-        if (isAlive) head.addView(ui.chip("ABIERTA", 0xFF15803D, Color.WHITE));
+        mid.addView(nm);
+        LinearLayout pl = ui.horizontal();
+        pl.setPadding(0, ui.dp(3), 0, 0);
+        pl.addView(ui.iconView(R.drawable.ic_link, ui.textDim, 14), ui.lp(ui.dp(14), ui.dp(14)));
+        TextView pt = ui.dim(r.proxy == null ? "Sin proxy elegido" : proxyLine(r.proxy));
+        pt.setPadding(ui.dp(6), 0, 0, 0);
+        pt.setMaxLines(2);
+        pt.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        pl.addView(pt, ui.lpWeight(1f));
+        mid.addView(pl);
+        head.addView(mid, ui.lpWeight(1f));
+        head.addView(isAlive
+                ? ui.chip("Abierta", Ui.alpha(ui.success, 0x2E), ui.success)
+                : ui.chip("Cerrada", 0x1FFFFFFF, ui.textDim));
         card.addView(head);
 
-        card.addView(ui.space(6));
-        card.addView(ui.dim(r.proxy == null ? "Sin proxy elegido" : "Proxy: " + r.proxy.name + "  ·  " + r.proxy.describe()));
         int stColor;
+        int stIcon;
         String stText;
         switch (r.mode) {
             case PROXY:
                 stColor = ui.success;
+                stIcon = R.drawable.ic_bolt;
                 stText = "Proxy ENCENDIDO: la conexión sale por el proxy";
                 break;
             case DIRECT:
                 stColor = ui.warn;
+                stIcon = R.drawable.ic_eye_off;
                 stText = "Proxy APAGADO: sale directo, con tu conexión real";
                 break;
             default:
                 stColor = ui.danger;
+                stIcon = R.drawable.ic_block;
                 stText = "Sin conexión: " + r.reason;
                 break;
         }
-        TextView st = ui.label(stText, 13, stColor, true);
-        st.setPadding(0, ui.dp(4), 0, 0);
-        card.addView(st);
+        card.addView(ui.notice(stIcon, stText, stColor),
+                ui.lpMargins(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 12, 0, 0));
 
         LinearLayout swRow = ui.horizontal();
-        swRow.setPadding(0, ui.dp(8), 0, ui.dp(4));
+        swRow.setPadding(ui.dp(2), ui.dp(10), 0, ui.dp(8));
         swRow.addView(ui.body("Proxy"), ui.lpWeight(1f));
         final Switch sw = new Switch(this);
+        ui.styleSwitch(sw);
         sw.setChecked(s.proxyEnabled);
         sw.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -360,19 +439,19 @@ public class MainActivity extends Activity {
         card.addView(swRow);
 
         LinearLayout btns = ui.horizontal();
-        btns.addView(ui.button(isAlive ? "Ir a la sesión" : "Abrir", Ui.PRIMARY, new View.OnClickListener() {
+        btns.addView(ui.pill("Abrir", Ui.PRIMARY, R.drawable.ic_play, 13, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openSession(s);
             }
         }), btnParams(true));
-        btns.addView(ui.button("Probar", Ui.TONAL, new View.OnClickListener() {
+        btns.addView(ui.pill("Probar", Ui.TONAL, R.drawable.ic_speed, 13, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 testSessionProxy(s);
             }
         }), btnParams(false));
-        btns.addView(ui.button("Más", Ui.TONAL, new View.OnClickListener() {
+        btns.addView(ui.pill("Más", Ui.TONAL, R.drawable.ic_more, 13, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sessionMenu(v, s, isAlive);
@@ -641,14 +720,27 @@ public class MainActivity extends Activity {
             content.addView(c, cardParams());
             return;
         }
+        content.addView(sectionTitle("Mis proxies"));
         for (ProxyDef p : data.proxies) content.addView(proxyCard(p), cardParams());
     }
 
     private View proxyCard(final ProxyDef p) {
         LinearLayout card = ui.card();
-        card.addView(ui.title(p.name));
-        card.addView(ui.space(4));
-        card.addView(ui.mono(p.describe()));
+
+        LinearLayout head = ui.horizontal();
+        head.addView(ui.iconTile(R.drawable.ic_dns, ui.primary, 46));
+        LinearLayout mid = ui.vertical();
+        mid.setPadding(ui.dp(12), 0, ui.dp(8), 0);
+        TextView nm = ui.title(p.name);
+        nm.setSingleLine(true);
+        nm.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        mid.addView(nm);
+        mid.addView(ui.mono(p.describe()));
+        head.addView(mid, ui.lpWeight(1f));
+        head.addView(ui.chip(p.protocol.toUpperCase(Locale.ROOT), Ui.alpha(ui.primary, 0x33), ui.lilac));
+        card.addView(head);
+
+        card.addView(ui.space(8));
         String auth;
         if (p.username.isEmpty()) auth = "Sin usuario";
         else if (!p.hasPassword()) auth = "Usuario: " + p.username + " (sin contraseña)";
@@ -658,21 +750,21 @@ public class MainActivity extends Activity {
         card.addView(ui.dim(auth));
         int used = data.sessionsUsing(p.id);
         card.addView(ui.dim(used == 0 ? "No la usa ninguna sesión" : "La usan " + used + (used == 1 ? " sesión" : " sesiones")));
-        card.addView(ui.space(8));
+        card.addView(ui.space(10));
         LinearLayout btns = ui.horizontal();
-        btns.addView(ui.button("Probar", Ui.PRIMARY, new View.OnClickListener() {
+        btns.addView(ui.pill("Probar", Ui.PRIMARY, R.drawable.ic_speed, 13, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 testProxy(p);
             }
         }), btnParams(true));
-        btns.addView(ui.button("Editar", Ui.TONAL, new View.OnClickListener() {
+        btns.addView(ui.pill("Editar", Ui.TONAL, R.drawable.ic_edit, 13, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Forms.proxyForm(MainActivity.this, ui, p);
             }
         }), btnParams(false));
-        btns.addView(ui.button("Eliminar", Ui.DANGER, new View.OnClickListener() {
+        btns.addView(ui.pill("Eliminar", Ui.DANGER, R.drawable.ic_delete, 13, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 deleteProxy(p);

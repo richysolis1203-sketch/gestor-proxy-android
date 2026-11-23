@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <!-- Tema oscuro morado (siempre oscuro): fondo, barras y diálogos del mismo estilo. -->
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:colorPrimary">@color/gp_accent</item>
-        <item name="android:colorAccent">@color/gp_accent</item>
+        <item name="android:colorAccent">@color/gp_accent_light</item>
         <item name="android:windowBackground">@color/gp_bg</item>
+        <item name="android:statusBarColor">@color/gp_bg</item>
+        <item name="android:navigationBarColor">@color/gp_bg_deep</item>
+        <item name="android:alertDialogTheme">@style/GpDialog</item>
+        <item name="android:forceDarkAllowed">false</item>
     </style>
     <style name="SessionTheme" parent="AppTheme" />
+    <style name="GpDialog" parent="@android:style/Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:colorAccent">@color/gp_accent_light</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
 </resources>

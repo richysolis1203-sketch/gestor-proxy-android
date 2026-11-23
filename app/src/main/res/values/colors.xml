@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="gp_bg">#F2F5F8</color>
-    <color name="gp_accent">#2563EB</color>
-    <color name="ic_launcher_background">#2563EB</color>
+    <color name="gp_bg">#0B0714</color>
+    <color name="gp_bg_deep">#120A26</color>
+    <color name="gp_accent">#8B5CF6</color>
+    <color name="gp_accent_light">#C4B5FD</color>
+    <color name="ic_launcher_background">#000000</color>
 </resources>

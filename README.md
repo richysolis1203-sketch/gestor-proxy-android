@@ -12,6 +12,7 @@ App de Android para navegar en **sesiones separadas**, cada una con su propio pr
 - Bloqueo de rastreadores, cookies de terceros opcionales, WebRTC bloqueado y reducción de huella digital.
 - Prueba de conexión: si funciona, IP pública, país, latencia y errores explicados, comparada con la IP real.
 - Crear, editar, duplicar, borrar datos y eliminar sesiones (hasta 10).
+- Diseño oscuro morado: ícono propio, fondo con imagen, contadores y tarjetas (el tema es siempre oscuro).
 
 > **No te hace anónimo ni te protege de todo tipo de rastreo.** Reduce parte del rastreo y evita fugas obvias,
 > pero los sitios pueden reconocerte por otras señales y tu proveedor de proxy ve a dónde te conectas.

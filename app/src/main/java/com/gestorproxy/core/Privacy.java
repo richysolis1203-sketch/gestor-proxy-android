@@ -74,9 +74,9 @@ public final class Privacy {
     public static String startPageHtml(String sessionName) {
         String esc = escape(sessionName);
         return "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-                + "<title>Sesión</title><style>body{font-family:sans-serif;margin:0;padding:32px 24px;background:#f4f6f8;color:#1b2733}"
-                + "h1{font-size:22px;margin:0 0 8px}p{line-height:1.5;color:#44525f}.box{background:#fff;border-radius:14px;padding:20px;"
-                + "margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}</style></head><body><h1>" + esc
+                + "<title>Sesión</title><style>body{font-family:sans-serif;margin:0;padding:32px 24px;background:#0b0714;color:#f4f1ff}"
+                + "h1{font-size:22px;margin:0 0 8px}p{line-height:1.5;color:#a9a1c8}.box{background:#160f29;border:1px solid #3b2e63;border-radius:14px;padding:20px;"
+                + "margin-top:20px}</style></head><body><h1>" + esc
                 + "</h1><p>Escribe una dirección o una búsqueda en la barra de arriba.</p>"
                 + "<div class=\"box\"><p><b>Esta ventana es una sesión aparte.</b> Sus cookies, su almacenamiento y su historial "
                 + "no se comparten con ninguna otra sesión.</p><p>La barra de color de arriba te dice por dónde sale la conexión. "
@@ -88,9 +88,9 @@ public final class Privacy {
         String t = escape(title);
         String d = escape(detail);
         return "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-                + "<title>Error</title><style>body{font-family:sans-serif;margin:0;padding:32px 24px;background:#f4f6f8;color:#1b2733}"
-                + "h1{font-size:20px;margin:0 0 12px}p{line-height:1.5;color:#44525f}.box{background:#fff;border-radius:14px;padding:18px;"
-                + "box-shadow:0 1px 3px rgba(0,0,0,.08)}</style></head><body><div class=\"box\"><h1>" + t + "</h1><p>" + d
+                + "<title>Error</title><style>body{font-family:sans-serif;margin:0;padding:32px 24px;background:#0b0714;color:#f4f1ff}"
+                + "h1{font-size:20px;margin:0 0 12px}p{line-height:1.5;color:#a9a1c8}.box{background:#160f29;border:1px solid #3b2e63;border-radius:14px;padding:18px;"
+                + "}</style></head><body><div class=\"box\"><h1>" + t + "</h1><p>" + d
                 + "</p></div></body></html>";
     }
 
